@@ -95,6 +95,26 @@ class GitHubClient:
         except json.JSONDecodeError:
             return []
 
+
+    def get_issue_comments(self, repo: str, issue_number: int) -> list[dict[str, Any]]:
+        """Get issue comments for a PR (PRs are issues with code). Handles pagination."""
+        all_comments = []
+        page = 1
+        while True:
+            endpoint = f"repos/{repo}/issues/{issue_number}/comments?per_page=100&page={page}"
+            output = self._gh_api(endpoint)
+            if not output:
+                break
+            try:
+                page_comments = json.loads(output)
+                if not page_comments:
+                    break
+                all_comments.extend(page_comments)
+                page += 1
+            except json.JSONDecodeError:
+                break
+        return all_comments
+
     def post_comment(self, repo: str, pr_number: int, body: str) -> int | None:
         """Post a top-level comment on a PR. Returns the comment ID, or None on failure."""
         result = self._gh(

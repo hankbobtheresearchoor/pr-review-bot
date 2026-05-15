@@ -24,6 +24,7 @@ dev = [
 [project.scripts]
 pr-review-poll = "pr_review_bot.poller:main"
 pr-review-post = "pr_review_bot.poster:main"
+pr-review-listen = "pr_review_bot.listener:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]

@@ -51,6 +51,7 @@ class RepoState:
     state_file: Path
     prs: dict[int, PRRecord] = field(default_factory=dict)
     last_poll: str = ""
+    processed_comments: dict[int, set[int]] = field(default_factory=dict)
 
     def mark_seen(self, number: int, title: str, author: str) -> PRRecord:
         """Mark a PR as seen + pending review. Returns the record."""
@@ -97,12 +98,23 @@ class RepoState:
         """Return PR numbers from the open list that we haven't seen yet."""
         return [n for n in open_pr_numbers if n not in self.prs]
 
+    def is_comment_processed(self, pr_number: int, comment_id: int) -> bool:
+        """Check if a comment has already been processed."""
+        return comment_id in self.processed_comments.get(pr_number, set())
+
+    def mark_comment_processed(self, pr_number: int, comment_id: int) -> None:
+        """Mark a comment as processed so it won't be re-dispatched."""
+        if pr_number not in self.processed_comments:
+            self.processed_comments[pr_number] = set()
+        self.processed_comments[pr_number].add(comment_id)
+
     def save(self) -> None:
         """Persist state to disk."""
         data = {
             "repo": self.repo,
             "last_poll": self.last_poll,
             "prs": {str(k): v.to_dict() for k, v in self.prs.items()},
+            "processed_comments": {str(k): list(v) for k, v in self.processed_comments.items()},
         }
         self.state_file.parent.mkdir(parents=True, exist_ok=True)
         self.state_file.write_text(json.dumps(data, indent=2))
@@ -116,11 +128,15 @@ class RepoState:
                 prs = {}
                 for k, v in data.get("prs", {}).items():
                     prs[int(k)] = PRRecord.from_dict(v)
+                processed = {}
+                for k, v in data.get("processed_comments", {}).items():
+                    processed[int(k)] = set(v)
                 return cls(
                     repo=repo,
                     state_file=state_file,
                     prs=prs,
                     last_poll=data.get("last_poll", ""),
+                    processed_comments=processed,
                 )
             except (json.JSONDecodeError, ValueError):
                 pass

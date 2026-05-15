@@ -30,6 +30,15 @@ pr-review-poll
 Output is one JSON line per new PR — pipe into your review agent.
 
 ### Post review comments
+
+### Listen for @mention commands
+```bash
+export PR_REVIEW_REPOS="owner/repo"
+pr-review-listen
+```
+
+Outputs JSON lines for each new @mention command found in PR comments.
+
 ```bash
 echo '{"number": 42, "body": "## Review\nLGTM!"}' | pr-review-post
 ```
@@ -55,15 +64,38 @@ src/pr_review_bot/
 ├── state.py           # PR state tracking (seen/reviewed/commented/failed)
 ├── github_client.py   # GitHub API via gh CLI
 ├── poller.py          # New PR detection
-└── poster.py          # Comment delivery with guarantees
+├── poster.py          # Comment delivery with guarantees
+└── listener.py       # PR comment monitoring with @mention dispatch
 
 tests/
 ├── test_config.py     # Config loading and whitelisting
 ├── test_state.py      # State persistence and transitions
 ├── test_poller.py     # PR detection and ingestion
 ├── test_poster.py     # Comment posting and retry logic
+├── test_listener.py   # Comment monitoring and @mention dispatch
 └── test_e2e.py        # Full E2E flow tests
 ```
+
+
+## Command-based triggering
+
+You can trigger bot actions by mentioning `@pr-review-bot` in PR comments:
+
+| Command | Action |
+|---|---|
+| `@pr-review-bot review` | Trigger review generation |
+| `@pr-review-bot approve` | Fast-approve the PR |
+| `@pr-review-bot re-review` | Delta review after updates |
+| `@pr-review-bot merge` | Merge the PR |
+| `@pr-review-bot explain` | Explain the PR changes |
+
+Run `pr-review-listen` to poll tracked PRs for new @mention commands:
+```bash
+export PR_REVIEW_REPOS="owner/repo"
+pr-review-listen
+```
+
+The listener tracks which comments have been processed so commands are never dispatched twice.
 
 ## Guarantees
 
