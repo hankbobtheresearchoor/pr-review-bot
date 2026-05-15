@@ -14,32 +14,32 @@ from pr_review_bot.state import RepoState
 
 class TestBotMentionPattern:
     def test_match_review(self):
-        assert BOT_MENTION_PATTERN.search("@pr-review-bot review")
-        assert BOT_MENTION_PATTERN.search("@pr-review-bot review this PR please")
+        assert BOT_MENTION_PATTERN.search("@hankbobtheresearchoor review")
+        assert BOT_MENTION_PATTERN.search("@hankbobtheresearchoor review this PR please")
 
     def test_match_approve(self):
-        assert BOT_MENTION_PATTERN.search("@pr-review-bot approve")
+        assert BOT_MENTION_PATTERN.search("@hankbobtheresearchoor approve")
 
     def test_match_re_review(self):
-        assert BOT_MENTION_PATTERN.search("@pr-review-bot re-review")
+        assert BOT_MENTION_PATTERN.search("@hankbobtheresearchoor re-review")
 
     def test_match_merge(self):
-        assert BOT_MENTION_PATTERN.search("@pr-review-bot merge")
+        assert BOT_MENTION_PATTERN.search("@hankbobtheresearchoor merge")
 
     def test_match_explain(self):
-        assert BOT_MENTION_PATTERN.search("@pr-review-bot explain")
+        assert BOT_MENTION_PATTERN.search("@hankbobtheresearchoor explain")
 
     def test_no_match_without_mention(self):
         assert not BOT_MENTION_PATTERN.search("please review this PR")
         assert not BOT_MENTION_PATTERN.search("@other-bot review")
 
     def test_extract_command_and_args(self):
-        m = BOT_MENTION_PATTERN.search("@pr-review-bot review this specific PR")
+        m = BOT_MENTION_PATTERN.search("@hankbobtheresearchoor review this specific PR")
         assert m.group(1) == "review"
         assert m.group(2) == " this specific PR"
 
     def test_args_stripped_in_dispatch(self):
-        m = BOT_MENTION_PATTERN.search("@pr-review-bot review this specific PR")
+        m = BOT_MENTION_PATTERN.search("@hankbobtheresearchoor review this specific PR")
         assert m.group(1) == "review"
         assert m.group(2) == " this specific PR"
 
@@ -47,7 +47,7 @@ class TestBotMentionPattern:
         assert BOT_MENTION_PATTERN.search("@PR-REVIEW-BOT REVIEW")
 
     def test_no_match_unknown_command(self):
-        assert not BOT_MENTION_PATTERN.search("@pr-review-bot unknown-command")
+        assert not BOT_MENTION_PATTERN.search("@hankbobtheresearchoor unknown-command")
 
 
 class TestPollComments:
@@ -74,7 +74,7 @@ class TestPollComments:
 
     def test_dispatches_review_command(self):
         client = _mock_client(comments=[
-            {"id": 1, "user": {"login": "alice"}, "body": "@pr-review-bot review", "html_url": "https://github.com/test-owner/test-repo/pull/42#issuecomment-1"}
+            {"id": 1, "user": {"login": "alice"}, "body": "@hankbobtheresearchoor review", "html_url": "https://github.com/test-owner/test-repo/pull/42#issuecomment-1"}
         ])
         _seed_state(self.state_file, "test-owner/test-repo", pr_numbers=[42])
         results = poll_comments(client, self.repo_cfg)
@@ -85,7 +85,7 @@ class TestPollComments:
 
     def test_skips_already_processed_comments(self):
         client = _mock_client(comments=[
-            {"id": 1, "user": {"login": "alice"}, "body": "@pr-review-bot review"}
+            {"id": 1, "user": {"login": "alice"}, "body": "@hankbobtheresearchoor review"}
         ])
         _seed_state(self.state_file, "test-owner/test-repo", pr_numbers=[42])
         # First pass — should dispatch
@@ -97,7 +97,7 @@ class TestPollComments:
 
     def test_skips_bot_own_comments(self):
         client = _mock_client(comments=[
-            {"id": 1, "user": {"login": "pr-review-bot"}, "body": "@pr-review-bot review"}
+            {"id": 1, "user": {"login": "hankbobtheresearchoor"}, "body": "@hankbobtheresearchoor review"}
         ])
         _seed_state(self.state_file, "test-owner/test-repo", pr_numbers=[42])
         results = poll_comments(client, self.repo_cfg)
@@ -105,9 +105,9 @@ class TestPollComments:
 
     def test_handles_multiple_commands_across_prs(self):
         client = _mock_client(comments=[
-            {"id": 1, "user": {"login": "alice"}, "body": "@pr-review-bot review"},
+            {"id": 1, "user": {"login": "alice"}, "body": "@hankbobtheresearchoor review"},
             {"id": 2, "user": {"login": "bob"}, "body": "LGTM"},
-            {"id": 3, "user": {"login": "carol"}, "body": "@pr-review-bot approve"},
+            {"id": 3, "user": {"login": "carol"}, "body": "@hankbobtheresearchoor approve"},
         ])
         _seed_state(self.state_file, "test-owner/test-repo", pr_numbers=[42, 43])
         results = poll_comments(client, self.repo_cfg)
@@ -118,7 +118,7 @@ class TestPollComments:
     def test_save_and_load_processed_comments(self):
         """Verify processed_comments survives save/load roundtrip."""
         client = _mock_client(comments=[
-            {"id": 1, "user": {"login": "alice"}, "body": "@pr-review-bot review"}
+            {"id": 1, "user": {"login": "alice"}, "body": "@hankbobtheresearchoor review"}
         ])
         _seed_state(self.state_file, "test-owner/test-repo", pr_numbers=[42])
         # Process the comment

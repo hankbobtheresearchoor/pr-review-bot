@@ -10,7 +10,7 @@ from .config import BotConfig, RepoConfig
 from .github_client import GitHubClient
 from .state import RepoState
 
-_MENTION_RE = r'@pr-review-bot\s+(review|approve|re-review|merge|explain)(\s+.*)?'
+_MENTION_RE = r'@hankbobtheresearchoor\s+(review|approve|re-review|merge|explain)(\s+.*)?'
 BOT_MENTION_PATTERN = re.compile(_MENTION_RE, re.IGNORECASE)
 
 KNOWN_COMMANDS = {"review", "approve", "re-review", "merge", "explain"}
@@ -19,7 +19,7 @@ KNOWN_COMMANDS = {"review", "approve", "re-review", "merge", "explain"}
 def poll_comments(
     client: GitHubClient,
     repo_cfg: RepoConfig,
-    bot_login: str = "pr-review-bot",
+    bot_login: str = "hankbobtheresearchoor",
 ) -> list[dict[str, Any]]:
     """Poll tracked PRs for new comments containing @bot commands.
 
