@@ -11,7 +11,8 @@ src/pr_review_bot/
 ├── state.py          # PR state machine (seen → reviewed → commented / failed)
 ├── github_client.py  # GitHub API via gh CLI + REST
 ├── poller.py         # New PR detection across repos
-└── poster.py         # Comment delivery with dedup + retry
+├── poster.py         # Comment delivery with dedup + retry
+└── listener.py       # PR comment monitoring with @mention command dispatch
 
 tests/
 ├── conftest.py       # Shared fixtures (mock client, temp state dir)
@@ -19,6 +20,7 @@ tests/
 ├── test_state.py     # State machine transitions, persistence, corruption recovery
 ├── test_poller.py    # PR detection, dedup, multi-repo, error resilience
 ├── test_poster.py    # Comment posting, retry, dedup, assurance checks
+├── test_listener.py  # Comment monitoring, @mention dispatch, state persistence
 └── test_e2e.py       # Full E2E flow tests (PR detect → analyze → comment)
 
 .github/workflows/
@@ -55,6 +57,15 @@ Every PR goes through: `seen → pending_review → commented`
 - On comment post failure → `failed` → retried on next cycle
 - PRs are **never** marked `commented` until the comment is confirmed via API
 - `ensure_all_commented()` cross-checks local state against GitHub to detect deleted comments
+
+
+### Comment Listener
+-  polls tracked PRs for new comments containing  mentions
+- Supported commands: , , , , 
+- Already-processed comments are tracked and never re-dispatched
+- Bot's own comments are automatically skipped
+- Use  CLI to poll for new @mention commands
+
 
 ### Delivery Guarantees
 1. **Never double-comment** — `has_bot_comment()` checks GitHub before posting
