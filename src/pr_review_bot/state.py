@@ -51,6 +51,7 @@ class RepoState:
     state_file: Path
     prs: dict[int, PRRecord] = field(default_factory=dict)
     last_poll: str = ""
+    last_listen: str = ""
     processed_comments: dict[int, set[int]] = field(default_factory=dict)
 
     def mark_seen(self, number: int, title: str, author: str) -> PRRecord:
@@ -113,6 +114,7 @@ class RepoState:
         data = {
             "repo": self.repo,
             "last_poll": self.last_poll,
+            "last_listen": self.last_listen,
             "prs": {str(k): v.to_dict() for k, v in self.prs.items()},
             "processed_comments": {str(k): list(v) for k, v in self.processed_comments.items()},
         }
@@ -136,6 +138,7 @@ class RepoState:
                     state_file=state_file,
                     prs=prs,
                     last_poll=data.get("last_poll", ""),
+                    last_listen=data.get("last_listen", ""),
                     processed_comments=processed,
                 )
             except (json.JSONDecodeError, ValueError):

@@ -95,6 +95,52 @@ class GitHubClient:
         except json.JSONDecodeError:
             return []
 
+    def get_repo_comments_since(
+        self, repo: str, since: str | None = None
+    ) -> list[dict[str, Any]]:
+        """Get all issue/PR comments across the entire repo since a timestamp.
+
+        Uses the global ``/repos/{owner}/{repo}/issues/comments`` endpoint.
+        One API call per repo instead of one per PR — O(repos) not O(PRs).
+        """
+        endpoint = (
+            f"repos/{repo}/issues/comments"
+            f"?per_page=100&sort=created&direction=asc"
+        )
+        if since:
+            endpoint += f"&since={since}"
+        output = self._gh_api(endpoint)
+        if not output:
+            return []
+        try:
+            return json.loads(output)
+        except json.JSONDecodeError:
+            return []
+
+    def get_pr_review_comments_since(
+        self, repo: str, pr_number: int, since: str | None = None
+    ) -> list[dict[str, Any]]:
+        """Get PR review (inline) comments since a timestamp.
+
+        Uses the pulls/{n}/comments endpoint — different from issues/{n}/comments.
+        Review comments are tied to specific lines in the diff.
+        """
+        endpoint = (
+            f"repos/{repo}/pulls/{pr_number}/comments"
+            f"?per_page=100&sort=created&direction=asc"
+        )
+        if since:
+            endpoint += f"&since={since}"
+        output = self._gh_api(endpoint)
+        if not output:
+            return []
+        try:
+            return json.loads(output)
+        except json.JSONDecodeError:
+            return []
+
+
+
 
     def get_issue_comments(self, repo: str, issue_number: int) -> list[dict[str, Any]]:
         """Get issue comments for a PR (PRs are issues with code). Handles pagination."""
@@ -114,6 +160,48 @@ class GitHubClient:
             except json.JSONDecodeError:
                 break
         return all_comments
+
+    def get_issue_comments_since(
+        self, repo: str, issue_number: int, since: str | None = None
+    ) -> list[dict[str, Any]]:
+        """Get issue comments since a timestamp. Uses GitHub's ``since`` param.
+
+        When ``since`` is None, falls back to the most recent page only (100 comments).
+        This avoids pulling all historical comments on every poll.
+        """
+        endpoint = f"repos/{repo}/issues/{issue_number}/comments?per_page=100&sort=created&direction=desc"
+        if since:
+            endpoint += f"&since={since}"
+        output = self._gh_api(endpoint)
+        if not output:
+            return []
+        try:
+            return json.loads(output)
+        except json.JSONDecodeError:
+            return []
+
+    def get_repo_comments_since(
+        self, repo: str, since: str | None = None
+    ) -> list[dict[str, Any]]:
+        """Get all issue/PR comments across the entire repo since a timestamp.
+
+        Uses the global ``/repos/{owner}/{repo}/issues/comments`` endpoint.
+        One API call per repo instead of one per PR — O(repos) not O(PRs).
+        """
+        endpoint = (
+            f"repos/{repo}/issues/comments"
+            f"?per_page=100&sort=created&direction=asc"
+        )
+        if since:
+            endpoint += f"&since={since}"
+        output = self._gh_api(endpoint)
+        if not output:
+            return []
+        try:
+            return json.loads(output)
+        except json.JSONDecodeError:
+            return []
+
 
     def post_comment(self, repo: str, pr_number: int, body: str) -> int | None:
         """Post a top-level comment on a PR. Returns the comment ID, or None on failure."""
@@ -142,6 +230,29 @@ class GitHubClient:
             return json.loads(output)
         except json.JSONDecodeError:
             return []
+
+    def get_repo_comments_since(
+        self, repo: str, since: str | None = None
+    ) -> list[dict[str, Any]]:
+        """Get all issue/PR comments across the entire repo since a timestamp.
+
+        Uses the global ``/repos/{owner}/{repo}/issues/comments`` endpoint.
+        One API call per repo instead of one per PR — O(repos) not O(PRs).
+        """
+        endpoint = (
+            f"repos/{repo}/issues/comments"
+            f"?per_page=100&sort=created&direction=asc"
+        )
+        if since:
+            endpoint += f"&since={since}"
+        output = self._gh_api(endpoint)
+        if not output:
+            return []
+        try:
+            return json.loads(output)
+        except json.JSONDecodeError:
+            return []
+
 
     def has_bot_comment(self, repo: str, pr_number: int, bot_login: str) -> bool:
         """Check if the bot has already commented on a PR."""
